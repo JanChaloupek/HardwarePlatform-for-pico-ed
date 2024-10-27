@@ -1,17 +1,14 @@
 # Soubor pripravujici nazvy funkci jake pouziva microbit
 from adafruit_ticks import ticks_diff as adf_ticks_diff, ticks_ms as adf_ticks_ms
 from time import monotonic_ns, sleep as time_sleep
-from board import P0, P8, P12, P14, P15, P19, P20
+from board import P0, P1, P8, P12, P13, P14, P15, P19, P20
 import digitalio
 import displayio
 from picoed import display, i2c as pico_i2c
+from pwmio import PWMOut, 
 
 
-pin0 = P0
-pin8 = digitalio.DigitalInOut(P8)
-pin12 = digitalio.DigitalInOut(P12)
-pin14 = digitalio.DigitalInOut(P14)
-pin15 = digitalio.DigitalInOut(P15)
+
 
 _TICKS_PERIOD = const(1<<29)
 _TICKS_MAX = const(_TICKS_PERIOD-1)
@@ -51,6 +48,37 @@ class I2C:
 
 i2c = I2C()
 
+class PinPWM:
+    def __init__(self, pin):
+        self.pinName = pin
+        self.pwm = None
+        
+    def set_analog_period(self, periodMS):
+        freq = int(1 / (periodMS / 1000))
+        self.pwm = PWMOut(self.pinName, frequency=freq)
+
+    def write_analog(self, value):
+        self.pwm.duty_cycle = int(value)
+
+class PinDigital:
+    def __init__(self, pin):
+        self.pinName = pin
+        self.pin = digitalio.DigitalInOut(self.pinName)
+        
+    def read_digital(self):
+        if self.pin.value:
+            return 1
+        return 0
+
+    def write_digital(self, value):
+        self.pin.direction = digitalio.Direction.OUTPUT    
+        self.pin.value = (value!=1)
+
+
+def pin_write_analog(pin, val):
+    pin.direction = digitalio.Direction.OUTPUT    
+    pin.value = (val!=1)
+
 def pin_write_digital(pin, val):
     pin.direction = digitalio.Direction.OUTPUT    
     pin.value = (val!=1)
@@ -59,6 +87,14 @@ def pin_read_digital(pin):
     if pin.value:
         return 1
     return 0
+
+pin0 = P0
+pin1 = PinPWM(P1)
+pin8 = PinDigital(P8)
+pin12 = PinDigital(P12)
+pin13 = PinPWM(P13)
+pin14 = PinDigital(P14)
+pin15 = PinDigital(P15)
 
 def sleep(ms):
     time_sleep(ms / 1000)
@@ -74,11 +110,11 @@ def ticks_diff(ticks1, ticks2):
 
 def time_pulse_us(pin, pulse_level, timeout_us=1000000):
     start = ticks_us()
-    while pin_read_digital(pin) != pulse_level:
+    while pin.read_digital() != pulse_level:
         if ticks_diff(ticks_us(), start) > timeout_us:
             return -1  # Timeout
     start = ticks_us()
-    while pin_read_digital(pin) == pulse_level:
+    while pin.read_digital() == pulse_level:
         if ticks_diff(ticks_us(), start) > timeout_us:
             return -1  # Timeout
     return ticks_diff(ticks_us(), start)
