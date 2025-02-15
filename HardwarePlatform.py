@@ -1,7 +1,7 @@
 # Soubor pripravujici nazvy funkci jake pouziva microbit
 from adafruit_ticks import ticks_diff as adf_ticks_diff, ticks_ms as adf_ticks_ms
 from time import monotonic_ns, sleep as time_sleep
-from board import P0, P1, P8, P12, P13, P14, P15, P19, P20
+from board import P0, P2, P1, P8, P12, P13, P14, P15, P19, P20
 from digitalio import DigitalInOut, Direction
 from picoed import display, i2c as pico_i2c
 from pwmio import PWMOut
@@ -68,6 +68,7 @@ class PinDigital:
 
 pin0 = P0
 pin1 = PinPWM(P1)
+pin2 = PinPWM(P2)
 pin8 = PinDigital(P8)
 pin12 = PinDigital(P12)
 pin13 = PinPWM(P13)
