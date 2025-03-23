@@ -1,6 +1,6 @@
 # Soubor pripravujici nazvy funkci jake pouziva microbit
 from adafruit_ticks import ticks_diff as adf_ticks_diff, ticks_ms as adf_ticks_ms
-from picoed import display, i2c as pico_i2c, button_a, button_b
+from picoed import display, i2c as pico_i2c, button_a, button_b, led
 from board import P0, P1, P2, P8, P12, P13, P14, P15, P19, P20
 from time import monotonic_ns, sleep as time_sleep
 from digitalio import DigitalInOut, Direction
@@ -53,6 +53,11 @@ class I2C:
     def write(self, addr:int, buf:bytearray, repeat:bool=False) -> None:
         self.__lock()
         self.picoed_i2c.writeto(addr, buf)
+        self.__unlock()
+
+    def write_readinto(self, addr:int, write_buf:bytearray, read_buf:bytearray) -> None:
+        self.__lock()
+        self.picoed_i2c.writeto_then_readfrom(addr, write_buf, read_buf)
         self.__unlock()
 
 i2c = I2C()
